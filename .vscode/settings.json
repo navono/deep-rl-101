@@ -1,0 +1,24 @@
+{
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "always",
+            "source.organizeImports.ruff": "always"
+        }
+    },
+    // 确保禁用其他 Python Linting 工具
+    "pylint.enabled": false,
+    "flake8.enabled": false,
+    // Ruff 配置
+    "ruff.enable": true,
+    "ruff.nativeServer": "auto",
+    "ruff.lint.enable": true,
+    "notebook.formatOnSave.enabled": true, // notebook 保存时自动格式化
+    "notebook.codeActionsOnSave": {
+        "source.fixAll": "explicit", // notebook 保存时自动修复可修复的 lint 错误
+        "source.organizeImports": "explicit" // notebook 保存时自动排序 import 语句
+    }
+}
