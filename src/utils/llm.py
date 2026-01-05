@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
 
@@ -10,19 +11,12 @@ from .utils import Config
 
 gen_config = Config().get_config()
 
-# 禁用当前进程的系统代理
-os.environ.pop("HTTP_PROXY", None)
-os.environ.pop("HTTPS_PROXY", None)
-os.environ.pop("http_proxy", None)
-os.environ.pop("https_proxy", None)
-os.environ.pop("ALL_PROXY", None)
-os.environ.pop("all_proxy", None)
+load_dotenv(".env")
+
+client = OpenAI(base_url=os.getenv("OPENAI_BASE_URL"), api_key=os.getenv("OPENAI_API_KEY"))
 
 
-client = OpenAI(base_url="http://127.0.0.1:8045/v1", api_key="sk-a1c626e503774854bd354e27ae92b2dc")
-
-
-def simple_llm_generate():
+def llm_generate():
     try:
         response = client.chat.completions.create(model="gemini-3-pro-high", messages=[{"role": "user", "content": "你好，介绍下你自己"}])
         logger.info(response.choices[0].message.content)
@@ -32,7 +26,7 @@ def simple_llm_generate():
         raise
 
 
-def simple_img_generate():
+def img_generate():
     try:
         response = client.chat.completions.create(
             model="gemini-3-pro-image",

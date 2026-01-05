@@ -12,8 +12,6 @@
     // 确保禁用其他 Python Linting 工具
     "pylint.enabled": false,
     "flake8.enabled": false,
-    // Python 解释器配置
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     // Ruff 配置
     "ruff.enable": true,
     "ruff.nativeServer": "auto",
@@ -23,6 +21,4 @@
         "notebook.source.fixAll": "explicit",
         "notebook.source.organizeImports": "explicit"
     },
-    // 强制使用当前项目的解释器
-    "ruff.interpreter": ["${workspaceFolder}/.venv/Scripts/python.exe"]
 }

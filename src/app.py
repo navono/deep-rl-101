@@ -1,5 +1,4 @@
-# from .local_llm import simple_llm_generate, simple_img_generate
-from src.hf_rl_class.unit1 import luna_lander_v2
+from src.hf_rl_class.unit1 import luna_lander_v2_model_train
 
 from .utils import Config, CustomizeLogger
 
@@ -8,8 +7,10 @@ logger = CustomizeLogger.make_logger(gen_config["log"])
 
 
 async def start():
-    logger.info("Hello from py-project-template!")
-    # simple_llm_generate()
-    # simple_img_generate()
+    logger.info("Hello from deep RL 101!")
 
-    luna_lander_v2()
+    # llm_generate()
+    # img_generation()
+
+    # luna_lander_v2()
+    luna_lander_v2_model_train()

@@ -9,6 +9,7 @@ authors = [
 ]
 license = {text = "MIT"}
 dependencies = [
+    "box2d-py>=2.3.8",
     "click>=8.2.1",
     "dask[complete,distributed]>=2025.9.0",
     "gymnasium>=0.28.1",
@@ -16,6 +17,9 @@ dependencies = [
     "jupyter>=1.1.1",
     "loguru>=0.7.3",
     "openai>=2.14.0",
+    "pip>=25.3",
+    "pygame>=2.6.1",
+    "python-dotenv>=1.2.1",
     "pyvirtualdisplay>=3.0",
     "pyyaml>=6.0.2",
     "stable-baselines3==2.0.0a5",
