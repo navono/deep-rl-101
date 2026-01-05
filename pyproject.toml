@@ -5,14 +5,21 @@ description = "Deep Rl 101 project"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
-    {name = "", email = ""},
+    {name = "Your Name", email = "your.email@example.com"},
 ]
 license = {text = "MIT"}
 dependencies = [
     "click>=8.2.1",
     "dask[complete,distributed]>=2025.9.0",
+    "gymnasium>=0.28.1",
+    "huggingface-sb3>=3.0",
+    "jupyter>=1.1.1",
     "loguru>=0.7.3",
+    "openai>=2.14.0",
+    "pyvirtualdisplay>=3.0",
     "pyyaml>=6.0.2",
+    "stable-baselines3==2.0.0a5",
+    "swig>=4.4.1",
 ]
 
 [project.scripts]

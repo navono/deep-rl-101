@@ -5,20 +5,24 @@
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file",
         "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": "always",
-            "source.organizeImports.ruff": "always"
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
         }
     },
     // 确保禁用其他 Python Linting 工具
     "pylint.enabled": false,
     "flake8.enabled": false,
+    // Python 解释器配置
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     // Ruff 配置
     "ruff.enable": true,
     "ruff.nativeServer": "auto",
     "ruff.lint.enable": true,
-    "notebook.formatOnSave.enabled": true, // notebook 保存时自动格式化
+    "notebook.formatOnSave.enabled": true,
     "notebook.codeActionsOnSave": {
-        "source.fixAll": "explicit", // notebook 保存时自动修复可修复的 lint 错误
-        "source.organizeImports": "explicit" // notebook 保存时自动排序 import 语句
-    }
+        "notebook.source.fixAll": "explicit",
+        "notebook.source.organizeImports": "explicit"
+    },
+    // 强制使用当前项目的解释器
+    "ruff.interpreter": ["${workspaceFolder}/.venv/Scripts/python.exe"]
 }

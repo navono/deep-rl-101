@@ -1,9 +1,11 @@
-install:
+install: install-hooks
 	uv sync --all-extras
-	@make install-hooks
 
 start:
 	uv run -m src.main run
+
+jupyter:
+	uv run jupyter lab
 
 format:
 	uv run ruff format .
@@ -25,4 +27,4 @@ install-hooks:
 	chmod +x .git/hooks/pre-commit.sh
 	@echo "Git pre-commit hook installed successfully."
 
-.PHONY: start format lint lint-fix check
+.PHONY: install start jupyter format lint lint-fix check install-hooks
