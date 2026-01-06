@@ -9,6 +9,10 @@ Deep Rl 101 project
 - **UV** package management
 - **Click** CLI support
 
+## Documentation
+
+- [PPO 模型架构](docs/model-architecture.md) - PPO 模型与环境空间关联机制详解
+
 ## Installation
 
 1. **Clone the template:**
@@ -31,18 +35,6 @@ Deep Rl 101 project
 make dev
 ```
 
-### Remote Setup
-
-```bash
-# Setup remote worker
-make remote-worker-setup
-
-# Start remote worker
-make remote-worker-start
-
-# Deploy to remote server
-make remote-deploy
-```
 
 ## Project Structure
 
@@ -50,6 +42,10 @@ make remote-deploy
 deep_rl_101/
 ├── config/
 │   └── config.yaml          # Configuration file
+├── docs/
+│   └── model-architecture.md # PPO 模型架构文档
+├── scripts/
+│   └── inspect_ppo_model.py # PPO 模型检查脚本
 ├── src/
 │   ├── __init__.py
 │   ├── app.py              # Main application logic
@@ -120,7 +116,7 @@ This template uses the following variables:
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under MIT License.
 
 ## Acknowledgments
 

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
 
-from .utils import Config
+from .config import Config
 
 gen_config = Config().get_config()
 

@@ -1,11 +1,14 @@
 install: install-hooks
 	uv sync --all-extras
 
-start:
-	uv run -m src.main run
+FUNC ?= eva
+# luna train eva llm img
 
-jupyter:
-	uv run jupyter lab
+start:
+	uv run -m src.main $(FUNC)
+
+inspect:
+	uv run -m src.inspect_ppo_model run
 
 format:
 	uv run ruff format .
@@ -27,4 +30,4 @@ install-hooks:
 	chmod +x .git/hooks/pre-commit.sh
 	@echo "Git pre-commit hook installed successfully."
 
-.PHONY: install start jupyter format lint lint-fix check install-hooks
+.PHONY: install start inspect format lint lint-fix check install-hooks

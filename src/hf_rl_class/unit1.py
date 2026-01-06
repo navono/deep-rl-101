@@ -1,7 +1,16 @@
+from pathlib import Path
+
 import gymnasium as gym
 import torch
 from loguru import logger
 from stable_baselines3 import PPO
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.monitor import Monitor
+
+from ..utils import Config
+
+gen_config = Config().get_config()
 
 
 def luna_lander_v2():
@@ -55,7 +64,14 @@ def luna_lander_v2():
     env.close()
 
 
-def luna_lander_v2_model_train():
+def luna_lander_v2_model_train(use_vec_env=False, n_envs=4):
+    """
+    Train PPO model on LunarLander-v2 with optional GPU and vectorized environments.
+
+    Args:
+        use_vec_env: Whether to use vectorized environments for parallel training
+        n_envs: Number of parallel environments (only used if use_vec_env=True)
+    """
     # Check GPU availability
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Using device: {device}")
@@ -63,13 +79,12 @@ def luna_lander_v2_model_train():
         logger.info(f"GPU: {torch.cuda.get_device_name(0)}")
         logger.info(f"GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
 
-    # Create environment
-    env = gym.make("LunarLander-v2")
-
-    # # Instantiate the agent
-    # model = PPO("MlpPolicy", env, verbose=1)
-    # # Train the agent
-    # model.learn(total_timesteps=int(2e5))
+    # Create environment (vectorized or single)
+    if use_vec_env:
+        logger.info(f"Creating {n_envs} parallel environments")
+        env = make_vec_env("LunarLander-v2", n_envs=n_envs)
+    else:
+        env = gym.make("LunarLander-v2")
 
     # We added some parameters to accelerate the training
     model = PPO(
@@ -87,7 +102,23 @@ def luna_lander_v2_model_train():
 
     # Train it for 1,000,000 timesteps
     model.learn(total_timesteps=1000000)
+
     # Save the model
-    model_name = "ppo-LunarLander-v2"
+    from datetime import datetime
+
+    # 创建 outputs 目录
+    output_dir = Path(gen_config["outputs"])
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_name = output_dir / f"ppo-LunarLander-v2_{timestamp}"
     model.save(model_name)
     logger.info(f"Model saved to {model_name}")
+
+
+def luna_lander_v2_model_eva():
+    model_path = "./outputs/ppo-LunarLander-v2_20260105_154857.zip"
+    model = PPO.load(model_path)
+    eval_env = Monitor(gym.make("LunarLander-v2"))
+    mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=10, deterministic=True)
+    logger.debug(f"mean_reward={mean_reward:.2f} +/- {std_reward}")
