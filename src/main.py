@@ -10,7 +10,7 @@ def parse_args():
         "func",
         nargs="?",
         default="eva",
-        choices=["luna", "train", "eva", "llm", "img"],
+        choices=["llm", "img", "luna", "train", "eva", "play", "api"],
         help="Function to run: luna (luna_lander_v2), train (luna_lander_v2_model_train), eva (luna_lander_v2_model_eva), llm (llm_generate), img (img_generation)",
     )
     return parser.parse_args()
