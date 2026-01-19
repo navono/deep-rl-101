@@ -1,8 +1,9 @@
 install: install-hooks
 	uv sync --all-extras
 
-FUNC ?= play
-# llm img luna train eva play api
+FUNC ?= unit_0_play
+# llm img 
+# unit_0_luna unit_0_train unit_0_eva unit_0_play unit_0_api
 
 start:
 	uv run -m src.main $(FUNC)
