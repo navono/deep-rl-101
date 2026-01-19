@@ -1,7 +1,7 @@
 install: install-hooks
 	uv sync --all-extras
 
-FUNC ?= unit_0_play
+FUNC ?= basic_rl
 # llm img 
 # unit_0_luna unit_0_train unit_0_eva unit_0_play unit_0_api
 

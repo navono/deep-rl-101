@@ -87,47 +87,205 @@ action_space = env.action_space           # LunarLander-v2: Discrete(4)
 
 ## 4. PPO + MlpPolicy 网络架构
 
-### 4.1 整体架构图
+### 4.1 ASCII 架构图
+
+以下 ASCII 图展示了 PPO 模型的整体架构，**可在任何环境下正常查看**：
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          PPO 模型架构总览                                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌────────────────────┐     ┌────────────────────┐                              │
+│  │  LunarLander-v2    │     │  PPO Model         │                              │
+│  │  Environment       │     │  Initialization    │                              │
+│  ├────────────────────┤     ├────────────────────┤                              │
+│  │ Observation Space  │ ──► │ 读取 observation   │                               │
+│  │ Box(8,)            │     │ space 信息         │                               │
+│  ├────────────────────┤     ├────────────────────┤                              │
+│  │ Action Space       │ ──► │ 读取 action space  │                              │
+│  │ Discrete(4)        │     │ 信息               │                              │
+│  └────────────────────┘     └─────────┬──────────┘                             │
+│                                       │                                        │
+│                                       ▼                                        │
+│  ┌──────────────────────────────────────────────────────────────────────────┐  │
+│  │                      PPO MlpPolicy 神经网络                                │  │
+│  ├──────────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                          │   │
+│  │   输入层 (Input Layer)                                                    │   │
+│  │   ┌─────────┐                                                            │   │
+│  │   │  8 节点  │  ◄── observation_space.shape[0]                            │   │
+│  │   └────┬────┘                                                            │   │
+│  │        │                                                                 │   │
+│  │        ▼                                                                 │   │
+│  │   隐藏层 1 (Hidden Layer 1)                                               │   │
+│  │   ┌─────────┐                                                            │   │
+│  │   │ 64 节点  │  ReLU 激活函数                                              │   │
+│  │   └────┬────┘                                                            │   │
+│  │        │                                                                 │   │
+│  │        ▼                                                                 │   │
+│  │   隐藏层 2 (Hidden Layer 2)                                               │   │
+│  │   ┌─────────┐                                                            │   │
+│  │   │ 64 节点  │  ReLU 激活函数                                              │   │
+│  │   └────┬────┘                                                            │   │
+│  │        │                                                                 │   │
+│  │        ├──────────────────┬─────────────────────────────┐                │   │
+│  │        │                  │                             │                │   │
+│  │        ▼                  ▼                             ▼                │   │
+│  │   ┌─────────┐       ┌─────────┐                   ┌─────────┐            │   │
+│  │   │ 4 节点   │       │  1 节点  │                  │ 状态     │            │   │
+│  │   │ Softmax │       │  线性    │                   │ 价值    │            │   │
+│  │   └────┬────┘       └────┬────┘                   │ V(s)    │            │   │
+│  │        │                 │                        │ 用于     │            │   │
+│  │        ▼                 │                        │ A(s,a)  │            │    │
+│  │   动作概率分布             │                        │ 计算     │            │    │
+│  │   [0.25, 0.25,           │                        └─────────┘             │   │
+│  │    0.25, 0.25]           │                                                │   │
+│  │        │                 │                                                │   │
+│  │        ▼                 │                                                │   │
+│  │   选择动作                │                                                 │   │
+│  │   (argmax 或采样)         │                                                 │   │
+│  │        │                 │                                                 │   │
+│  │        └────────┬────────┘                                                 │   │
+│  │                 │                                                          │   │
+│  └─────────────────│──────────────────────────────────────────────────────────┘   │
+│                    │                                                              │
+│                    ▼                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────────┐     │
+│  │                      自动训练流程                                          │     │
+│  ├──────────────────────────────────────────────────────────────────────────┤     │
+│  │                                                                          │     │
+│  │   model.learn(total_timesteps=1000000)                                   │     │
+│  │        │                                                                 │     │
+│  │        ├────────────────────────────────────────────────────────────┐    │     │
+│  │        │                                                            │    │     │
+│  │        ▼                                                            ▼    │     │
+│  │   ┌───────────┐                                               收集经验数据 │     │
+│  │   │env.reset()│  ◄── 初始观察                                        │    │     │
+│  │   └─────┬─────┘                                                     │    │     │
+│  │         │                                                           │    │     │
+│  │         ▼                                                           │    │     │
+│  │   ┌───────────┐                                                     │    │     │
+│  │   │env.step() │  ◄── 执行动作，获取 (obs, reward, done, ...)          │    │     │
+│  │   └─────┬─────┘                                                     │    │     │
+│  │         │                                                           │    │     │
+│  │         │                   ┌─────────────────────────────┐         │    │     │
+│  │         │                   │  策略更新 (Policy Update)     │        │    │     │
+│  │         │                   │  - 计算优势函数 A(s,a)         │───────│     │     │
+│  │         │                   │  - 更新 Actor 网络参数         │       │     │     │
+│  │         │                   │  - 更新 Critic 网络参数       │        │     │     │
+│  │         │                   └─────────────────────────────┘        │     │     │
+│  │         │                                                     │    │     │     │
+│  │         └──────────────────────────────────────────────────────────┘     │     │
+│  │                                                               │          │     │
+│  │                                                               ▼          │     │
+│  │                                                         循环继续          │     │
+│  │                                                               │          │     │
+│  └───────────────────────────────────────────────────────────────┼──────────┘     │
+│                                                           达到总步数                │
+│                                                                   │               │
+│                                                                   ▼               │
+│                                                              训练完成              │
+│                                                                                   │
+└───────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 简化流程图
+
+更简洁的流程表示：
+
+```
+┌────────────────┐      ┌────────────────┐      ┌────────────────┐
+│   环境空间      │       │   PPO 模型     │      │   神经网络       │
+├────────────────┤      ├────────────────┤      ├────────────────┤
+│ Observation    │ ──►  │ 自动读取并构建   │ ──►  │ 输入层: 8 节点   │
+│ Space: Box(8,) │      │ 匹配的网络架构   │      │ 隐藏层: 64×2    │
+├────────────────┤      ├────────────────┤      │ 输出层: 4+1     │
+│ Action Space   │ ──►  │ env 参数传递    │      │ (动作 + 价值)   │
+│ Discrete(4)    │      │                │      └────────────────┘
+└────────────────┘      └───────┬────────┘              │
+                                │                       │
+                                ▼                       ▼
+                        ┌─────────────────────────────────────┐
+                        │        model.learn() 自动训练        │
+                        │  - 自动 reset/step                   │
+                        │  - 自动数据收集                       │
+                        │  - 自动策略更新                       │
+                        └─────────────────────────────────────┘
+```
+
+### 4.3 Mermaid 架构图
+
+> **注意**: 以下图表在支持 Mermaid 的环境中可以自动渲染。如果无法看到图表，请使用上面的 ASCII 图。
+
+#### 整体架构图
 
 ```mermaid
 graph TB
-    subgraph "LunarLander-v2 环境"
-        A[Observation Space<br/>Box shape=8,8] --> B[Action Space<br/>Discrete n=4,4]
+    subgraph ENV["LunarLander-v2 环境"]
+        OBS[Observation Space<br/>Box(8,)] --> ACT[Action Space<br/>Discrete(4)]
     end
     
-    subgraph "PPO 模型初始化"
-        B --> C[传入 PPO env 参数]
+    subgraph INIT["PPO 模型初始化"]
+        ACT --> CREATE[传入 env 参数]
     end
     
-    subgraph "PPO MlpPolicy 神经网络"
-        D[输入层<br/>8个节点<br/>对应观察维度] --> E[隐藏层 1<br/>64个节点<br/>ReLU 激活]
-        E --> F[隐藏层 2<br/>64个节点<br/>ReLU 激活]
-        F --> G[动作输出层<br/>4个节点<br/>Softmax 激活]
-        F --> H[价值输出层<br/>1个节点<br/>输出状态价值]
+    subgraph NN["PPO MlpPolicy 神经网络"]
+        INPUT[输入层<br/>8 节点] --> H1[隐藏层 1<br/>64 节点<br/>ReLU]
+        H1 --> H2[隐藏层 2<br/>64 节点<br/>ReLU]
+        H2 --> ACT_OUT[动作输出<br/>4 节点<br/>Softmax]
+        H2 --> VAL_OUT[价值输出<br/>1 节点]
     end
     
-    subgraph "自动训练流程"
-        I[model.learn] --> J[自动调用 env.reset]
-        J --> K[收集经验数据]
-        K --> L[自动调用 env.step]
-        L --> M[更新网络参数]
-        M -->|循环| K
+    subgraph TRAIN["自动训练流程"]
+        LEARN[model.learn] --> RESET[env.reset]
+        RESET --> COLLECT[收集经验]
+        COLLECT --> STEP[env.step]
+        STEP --> UPDATE[更新网络]
+        UPDATE -->|循环| COLLECT
     end
     
-    C --> D
-    G -->|输出动作概率分布| N[选择动作]
-    H -->|输出状态价值| O[用于优势函数计算]
-    N --> L
-    O --> M
+    CREATE --> INPUT
+    ACT_OUT -->|动作概率| SELECT[选择动作]
+    VAL_OUT -->|状态价值| ADV[优势计算]
+    SELECT --> STEP
+    ADV --> UPDATE
     
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style G fill:#ffe1e1
-    style H fill:#e1ffe1
-    style I fill:#f0e1ff
+    style OBS fill:#e1f5ff
+    style ACT fill:#fff4e1
+    style ACT_OUT fill:#ffe1e1
+    style VAL_OUT fill:#e1ffe1
+    style LEARN fill:#f0e1ff
 ```
 
-### 4.2 网络层详解
+#### 数据流向序列图
+
+```mermaid
+sequenceDiagram
+    participant E as Environment
+    participant M as PPO Model
+    participant A as Actor
+    participant C as Critic
+    
+    E->>M: env.reset() 获取初始观察
+    M->>A: 前向传播计算动作概率
+    A-->>M: 返回动作概率分布
+    M->>M: 根据概率选择动作
+    M->>E: env.step(action) 执行动作
+    E->>E: 环境模拟
+    E-->>M: 返回 (obs, reward, done, info)
+    M->>C: 前向传播计算状态价值
+    C-->>M: 返回 V(s)
+    M->>M: 存储经验
+    M->>M: 累积多个步骤
+    M->>A: 更新 Actor 参数
+    M->>C: 更新 Critic 参数
+    M->>E: 如果 done，调用 env.reset()
+    
+    Note over M,A,C: 上述循环在 model.learn() 中自动进行
+```
+
+### 4.4 网络层详解
 
 #### 输入层
 - **维度**: 8
@@ -248,38 +406,7 @@ env.close()
 
 ---
 
-## 7. 数据流向图
-
-```mermaid
-sequenceDiagram
-    participant E as Environment
-    participant P as PPO Model
-    participant A as Actor Network
-    participant C as Critic Network
-    
-    E->>P: env.reset() 获取初始观察
-    P->>A: 将观察传递给 Actor
-    A->>A: 前向传播计算动作概率
-    A-->>P: 返回动作概率分布
-    P->>P: 根据概率采样或选择动作
-    P->>E: env.step(action) 执行动作
-    E->>E: 环境模拟
-    E-->>P: 返回 (next_obs, reward, done, truncated, info)
-    P->>C: 将观察传递给 Critic
-    C->>C: 前向传播计算状态价值
-    C-->>P: 返回 V(s)
-    P->>P: 存储经验到缓冲区
-    P->>P: 累积多个步骤
-    P->>A: 使用经验更新 Actor 参数
-    P->>C: 使用经验更新 Critic 参数
-    P->>E: 如果 done/truncated，调用 env.reset()
-    
-    Note over P,A,C: 上述循环在 model.learn() 中自动进行
-```
-
----
-
-## 8. 常见问题
+## 7. 常见问题
 
 ### Q1: 为什么不需要显式指定输入输出维度？
 **A**: 因为 PPO 从 `env` 参数自动读取 `observation_space` 和 `action_space`，并根据空间信息自动构建网络。
@@ -311,15 +438,16 @@ model.learn(total_timesteps=1000000)
 
 ---
 
-## 9. 相关资源
+## 8. 相关资源
 
 - [Stable Baselines3 文档](https://stable-baselines3.readthedocs.io/)
 - [Gymnasium 文档](https://gymnasium.farama.org/)
 - [LunarLander-v2 说明](https://gymnasium.farama.org/environments/box2d/lunar_lander/)
+- [Mermaid 语法文档](https://mermaid.js.org/intro/)
 
 ---
 
-## 10. 总结
+## 9. 总结
 
 PPO 模型与环境的关联是通过 `env` 参数自动完成的：
 
@@ -328,3 +456,96 @@ PPO 模型与环境的关联是通过 `env` 参数自动完成的：
 3. **训练阶段**: 自动管理所有环境交互（reset, step, 数据收集）
 
 这种设计使得开发者无需关注底层细节，可以专注于算法和超参数的调优。
+
+---
+
+## 附录：图表渲染说明
+
+### 支持 Mermaid 的平台
+以下平台可以自动渲染本文档中的 Mermaid 图表：
+- **GitHub**: 直接在 README 或 .md 文件中查看
+- **GitLab**: 直接在 MR/issue 中查看
+- **VS Code**: 安装 "Markdown Preview Mermaid Support" 扩展
+- **Notion**: 原生支持 Mermaid
+- **Typora**: 原生支持 Mermaid
+- **Docusaurus**: 支持 Mermaid
+- **MkDocs with mermaid2 plugin**: 支持 Mermaid
+
+### 不支持 Mermaid 的平台
+如果上面的 Mermaid 图表无法显示，请使用：
+1. **ASCII 架构图**（本文档第 4.1 节）
+2. **简化流程图**（本文档第 4.2 节）
+3. 将文档复制到支持 Mermaid 的平台查看
+
+### 本地渲染 Mermaid
+如果需要在本地渲染 Mermaid 图表：
+```bash
+# 安装 mermaid CLI
+npm install -g @mermaid-js/mermaid-cli
+
+# 渲染图表
+mmdc -i docs/model-architecture.md -o docs/model-architecture.png
+```
+
+---
+
+## 10. 快速参考
+
+### 10.1 架构速览
+
+```
+LunarLander-v2 环境                    PPO 模型
+┌─────────────────────┐               ┌─────────────────┐
+│ Observation: Box(8) │ ───────────►  │ 输入层: 8 节点    │
+│ Action: Discrete(4) │ ───────────►  │ 隐藏层: 64×2     │
+└─────────────────────┘               │ 输出层: 4+1      │
+                                      └─────────────────┘
+                                              │
+                                              ▼
+                                     ┌─────────────────┐
+                                     │ model.learn()   │
+                                     │ 自动训练流程      │
+                                     └─────────────────┘
+```
+
+### 10.2 关键代码
+
+```python
+# 创建环境
+env = gym.make("LunarLander-v2")
+
+# 创建模型（自动关联空间信息）
+model = PPO("MlpPolicy", env=env)
+
+# 训练（自动管理交互）
+model.learn(total_timesteps=1000000)
+```
+
+### 10.3 网络参数统计
+
+| 层类型 | 维度 | 参数量 |
+|--------|------|--------|
+| 输入层 → 隐藏层1 | 8 → 64 | 512 + 64 = 576 |
+| 隐藏层1 → 隐藏层2 | 64 → 64 | 4,096 + 64 = 4,160 |
+| 隐藏层2 → 动作输出 | 64 → 4 | 256 + 4 = 260 |
+| 隐藏层2 → 价值输出 | 64 → 1 | 64 + 1 = 65 |
+| **总计** | - | **9,797** |
+
+### 10.4 查看命令
+
+```bash
+# 运行演示脚本
+python scripts/inspect_ppo_model.py
+
+# 查看文档
+cat docs/model-architecture.md
+```
+
+---
+
+## 变更日志
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 1.0 | 2026-01-05 | 初始版本，包含 ASCII 和 Mermaid 双版本图表 |
+| 1.1 | 2026-01-05 | 添加快速参考章节和图表渲染说明 |
