@@ -1,4 +1,7 @@
-from src.gym_doc.basic_rl import first_rl
+from src.gym_learning.basic_rl import first_rl, rl_spaces
+from src.gym_learning.training_agent import analyze_agent as blackjack_analyze_agent
+from src.gym_learning.training_agent import eva_agent as blackjack_eva_agent
+from src.gym_learning.training_agent import train_agent as blackjack_train_agent
 from src.hf_rl_class.unit_0_luna_lander import luna_lander_v2, luna_lander_v2_model_deploy_api, luna_lander_v2_model_eva, luna_lander_v2_model_play, luna_lander_v2_model_train
 from src.utils.llm import img_generate, llm_generate
 
@@ -20,6 +23,10 @@ async def start(func: str = "eva"):
         "unit_0_play": luna_lander_v2_model_play,
         "unit_0_api": luna_lander_v2_model_deploy_api,
         "basic_rl": first_rl,
+        "rl_spaces": rl_spaces,
+        "blackjack_train": blackjack_train_agent,
+        "blackjack_eva": blackjack_eva_agent,
+        "blackjack_analyze": blackjack_analyze_agent,
     }
 
     if func not in func_map:

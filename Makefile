@@ -1,9 +1,11 @@
 install: install-hooks
 	uv sync --all-extras
 
-FUNC ?= basic_rl
+FUNC ?= blackjack_eva
 # llm img 
 # unit_0_luna unit_0_train unit_0_eva unit_0_play unit_0_api
+# basic_rl rl_spaces
+# blackjack_train blackjack_eva blackjack_analyze
 
 start:
 	uv run -m src.main $(FUNC)

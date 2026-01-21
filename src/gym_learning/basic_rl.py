@@ -35,3 +35,19 @@ def first_rl():
 
     logger.debug(f"Episode finished! Total reward: {total_reward}")
     env.close()
+
+
+def rl_spaces():
+    # Discrete action space (button presses)
+    env = gym.make("CartPole-v1")
+    logger.debug(f"Action space: {env.action_space}")  # Discrete(2) - left or right
+    logger.debug(f"Sample action: {env.action_space.sample()}")  # 0 or 1
+
+    # Box observation space (continuous values)
+    """
+    用于描述具有上下限的任意 n 维有界空间（例如连续控制或图像像素）。
+    """
+    logger.debug(f"Observation space: {env.observation_space}")  # Box with 4 values
+    # Box([-4.8, -inf, -0.418, -inf], [4.8, inf, 0.418, inf])
+
+    logger.debug(f"Sample observation: {env.observation_space.sample()}")  # Random valid observation

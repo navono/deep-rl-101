@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
@@ -18,7 +19,7 @@ client = OpenAI(base_url=os.getenv("OPENAI_BASE_URL"), api_key=os.getenv("OPENAI
 
 def llm_generate():
     try:
-        response = client.chat.completions.create(model="gemini-3-pro-high", messages=[{"role": "user", "content": "你好，介绍下你自己"}])
+        response = client.chat.completions.create(model="gemini-3-flesh", messages=[{"role": "user", "content": "你好，介绍下你自己"}])
         logger.info(response.choices[0].message.content)
     except Exception as e:
         logger.error(f"LLM 调用失败: {e}")
@@ -71,9 +72,6 @@ def img_generate():
             output_path.write_bytes(image_data)
             logger.info(f"图片已保存到: {output_path}")
         elif image_content.startswith("http"):
-            # 如果是 URL，需要下载
-            import requests
-
             output_path = output_dir / f"generated_image_{timestamp}.png"
             img_response = requests.get(image_content)
             output_path.write_bytes(img_response.content)

@@ -9,9 +9,9 @@ def parse_args():
     parser.add_argument(
         "func",
         nargs="?",
-        default="eva",
-        choices=["llm", "img", "unit_0_luna", "unit_0_train", "unit_0_eva", "unit_0_play", "unit_0_api", "basic_rl"],
-        help="Function to run: unit_0_luna (luna_lander_v2), unit_0_train (luna_lander_v2_model_train), unit_0_eva (luna_lander_v2_model_eva), unit_0_play (luna_lander_v2_model_play), unit_0_api (luna_lander_v2_model_deploy_api), llm (llm_generate), img (img_generation)",
+        default="llm",
+        choices=["llm", "img", "unit_0_luna", "unit_0_train", "unit_0_eva", "unit_0_play", "unit_0_api", "basic_rl", "rl_spaces", "blackjack_train", "blackjack_eva", "blackjack_analyze"],
+        help="Function to run: unit_0_luna (luna_lander_v2), unit_0_train (luna_lander_v2_model_train), unit_0_eva (luna_lander_v2_model_eva), unit_0_play (luna_lander_v2_model_play), unit_0_api (luna_lander_v2_model_deploy_api), llm (llm_generate), img (img_generation), basic_rl (first_rl), rl_spaces (rl_spaces)",
     )
     return parser.parse_args()
 
