@@ -1,4 +1,6 @@
 from src.gym_learning.basic_rl import first_rl, rl_spaces
+from src.gym_learning.custom_env import eva_agent as gridworld_eva_agent
+from src.gym_learning.custom_env import train_agent as gridworld_train_agent
 from src.gym_learning.training_agent import analyze_agent as blackjack_analyze_agent
 from src.gym_learning.training_agent import eva_agent as blackjack_eva_agent
 from src.gym_learning.training_agent import train_agent as blackjack_train_agent
@@ -27,6 +29,8 @@ async def start(func: str = "eva"):
         "blackjack_train": blackjack_train_agent,
         "blackjack_eva": blackjack_eva_agent,
         "blackjack_analyze": blackjack_analyze_agent,
+        "gridworld_train": gridworld_train_agent,
+        "gridworld_eva": gridworld_eva_agent,
     }
 
     if func not in func_map:
